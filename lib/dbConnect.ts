@@ -7,7 +7,7 @@ declare global {
   };
 }
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://neuweltgeld:neuweltgeld123@cluster0.mongodb.net/minesweeper?retryWrites=true&w=majority';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://knncnl:Marcus6641..@cluster0.yegjumt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 
 if (!MONGODB_URI) {
   throw new Error('MongoDB URI tanımlanmamış');
