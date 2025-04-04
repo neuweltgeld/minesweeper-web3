@@ -438,7 +438,7 @@ export default function Home() {
                     <div className="space-y-8">
                       <div className="text-center space-y-4">
                         <div className="flex justify-center">
-                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-pixel overflow-hidden whitespace-nowrap border-r-2 border-purple-500 animate-typing w-fit">
+                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-pixel overflow-hidden whitespace-nowrap border-r-2 border-purple-500 animate-typing w-0">
                             Welcome to Minesweeper!
                           </h2>
                         </div>
