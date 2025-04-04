@@ -10,28 +10,29 @@ import { publicProvider } from 'wagmi/providers/public';
 import { ChakraProvider } from '@chakra-ui/react';
 import '../styles/globals.css';
 
-const sepolia = {
-  id: 11155111,
-  name: 'Sepolia',
-  network: 'sepolia',
+export const CONTRACT_ADDRESS = '0xcc9117a1b591Db1f7063F7Db5Fd1190097db0EE6';
+
+const somnia = {
+  id: 50312,
+  name: 'Somnia',
+  network: 'somnia',
   nativeCurrency: {
     decimals: 18,
-    name: 'ETH',
-    symbol: 'ETH',
+    name: 'STT',
+    symbol: 'STT',
   },
   rpcUrls: {
-    public: { http: ['https://rpc.sepolia.org'] },
-    default: { http: ['https://rpc.sepolia.org'] },
+    public: { http: ['https://dream-rpc.somnia.network/'] },
+    default: { http: ['https://dream-rpc.somnia.network/'] },
   },
   blockExplorers: {
-    etherscan: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
-    default: { name: 'Sepolia Etherscan', url: 'https://sepolia.etherscan.io' },
+    default: { name: 'Somnia Explorer', url: 'https://shannon-explorer.somnia.network/' },
   },
   testnet: true,
 };
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
-  [sepolia],
+  [somnia],
   [publicProvider()]
 );
 
