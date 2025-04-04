@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const playerSchema = new mongoose.Schema({
+const PlayerSchema = new mongoose.Schema({
   address: {
     type: String,
     required: true,
@@ -8,7 +8,7 @@ const playerSchema = new mongoose.Schema({
   },
   remainingGames: {
     type: Number,
-    default: 10,
+    default: 3,
   },
   lastResetTime: {
     type: Date,
@@ -24,4 +24,4 @@ const playerSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.models.Player || mongoose.model('Player', playerSchema); 
+export default mongoose.models.Player || mongoose.model('Player', PlayerSchema); 

@@ -1,85 +1,63 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../lib/supabase';
+import dbConnect from '../../lib/dbConnect';
+import Leaderboard from '../../models/Leaderboard';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'DELETE') {
-    try {
-      const { error } = await supabase
-        .from('leaderboard')
-        .delete()
-        .neq('id', 0);
-      
-      if (error) throw error;
-      return res.status(200).json({ message: 'Leaderboard reset successfully' });
-    } catch (error) {
-      console.error('Error resetting leaderboard:', error);
-      return res.status(500).json({ error: 'Server error' });
-    }
-  }
+  await dbConnect();
 
   if (req.method === 'GET') {
     try {
-      const { data, error } = await supabase
-        .from('leaderboard')
-        .select('*')
-        .order('score', { ascending: false })
-        .order('date', { ascending: false })
+      const leaderboard = await Leaderboard.find()
+        .sort({ score: -1, date: -1 })
         .limit(20);
-
-      if (error) throw error;
-      return res.status(200).json(data);
+      return res.status(200).json(leaderboard);
     } catch (error) {
-      console.error('Error fetching leaderboard:', error);
-      return res.status(500).json({ error: 'Server error' });
+      console.error('Liderlik tablosu alma hatası:', error);
+      return res.status(500).json({ error: 'Sunucu hatası' });
     }
   }
 
   if (req.method === 'POST') {
     try {
-      console.log('Received score save request:', req.body);
-      
       const { address, score } = req.body;
       
-      if (!address || score === undefined) {
-        console.error('Missing required fields:', { address, score });
-        return res.status(400).json({ error: 'Missing required fields' });
+      if (!address || typeof score !== 'number') {
+        return res.status(400).json({ error: 'Geçersiz veri' });
       }
 
-      const { data: existingEntry, error: fetchError } = await supabase
-        .from('leaderboard')
-        .select('*')
-        .eq('address', address)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+      const existingEntry = await Leaderboard.findOne({ address });
       
       if (existingEntry) {
         if (score > existingEntry.score) {
-          const { error: updateError } = await supabase
-            .from('leaderboard')
-            .update({ score, date: new Date().toISOString() })
-            .eq('address', address);
-
-          if (updateError) throw updateError;
-          console.log('Updated existing entry');
-          return res.status(200).json({ isNewHighScore: true });
+          await Leaderboard.findOneAndUpdate(
+            { address },
+            { score, date: new Date() }
+          );
         }
-        console.log('Score not higher than existing');
-        return res.status(200).json({ isNewHighScore: false });
+      } else {
+        await Leaderboard.create({ address, score });
       }
 
-      const { error: insertError } = await supabase
-        .from('leaderboard')
-        .insert([{ address, score, date: new Date().toISOString() }]);
-
-      if (insertError) throw insertError;
-      console.log('Created new entry');
-      return res.status(201).json({ message: 'Score saved', isNewHighScore: true });
+      const leaderboard = await Leaderboard.find()
+        .sort({ score: -1, date: -1 })
+        .limit(20);
+      
+      return res.status(200).json(leaderboard);
     } catch (error) {
-      console.error('Error saving score:', error);
-      return res.status(500).json({ error: 'Server error' });
+      console.error('Skor kaydetme hatası:', error);
+      return res.status(500).json({ error: 'Sunucu hatası' });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method === 'DELETE') {
+    try {
+      await Leaderboard.deleteMany({});
+      return res.status(200).json({ message: 'Liderlik tablosu sıfırlandı' });
+    } catch (error) {
+      console.error('Liderlik tablosu sıfırlama hatası:', error);
+      return res.status(500).json({ error: 'Sunucu hatası' });
+    }
+  }
+
+  return res.status(405).json({ error: 'Metod desteklenmiyor' });
 } 

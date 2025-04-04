@@ -5,75 +5,102 @@ import Player from '../../../models/Player';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { address } = req.query;
 
+  if (!address || typeof address !== 'string') {
+    return res.status(400).json({ error: 'Geçersiz adres' });
+  }
+
   await dbConnect();
 
   if (req.method === 'GET') {
     try {
-      const player = await Player.findOne({ address });
+      let player = await Player.findOne({ address });
+      
       if (!player) {
-        // Yeni oyuncu oluştur
-        const newPlayer = await Player.create({
+        player = await Player.create({
           address,
-          remainingGames: 10,
+          remainingGames: 3,
           lastResetTime: new Date(),
+          totalGames: 0,
+          purchasedGames: 0
         });
-        return res.status(200).json(newPlayer);
+      } else {
+        // 24 saat kontrolü
+        const lastReset = new Date(player.lastResetTime);
+        const now = new Date();
+        const hoursSinceReset = (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
+        
+        if (hoursSinceReset >= 24) {
+          player = await Player.findOneAndUpdate(
+            { address },
+            {
+              remainingGames: 3,
+              lastResetTime: now
+            },
+            { new: true }
+          );
+        }
       }
-
-      // 24 saat kontrolü
-      const now = new Date();
-      const lastReset = new Date(player.lastResetTime);
-      const hoursSinceLastReset = (now.getTime() - lastReset.getTime()) / (1000 * 60 * 60);
-
-      if (hoursSinceLastReset >= 24) {
-        player.remainingGames = 10;
-        player.lastResetTime = now;
-        await player.save();
-      }
-
+      
       return res.status(200).json(player);
     } catch (error) {
-      return res.status(500).json({ error: 'Server error' });
+      console.error('Oyuncu verisi alma hatası:', error);
+      return res.status(500).json({ error: 'Sunucu hatası' });
     }
   }
 
   if (req.method === 'PUT') {
     try {
-      const { action } = req.body;
+      const { action, amount } = req.body;
+      
+      if (!action) {
+        return res.status(400).json({ error: 'Eylem belirtilmedi' });
+      }
 
-      if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
+      let player = await Player.findOne({ address });
+      if (!player) {
+        return res.status(404).json({ error: 'Oyuncu bulunamadı' });
       }
 
       if (action === 'use') {
-        const player = await Player.findOne({ address });
-        if (!player || player.remainingGames <= 0) {
-          return res.status(400).json({ error: 'No games remaining' });
+        if (player.remainingGames <= 0) {
+          return res.status(400).json({ error: 'Kalan oyun hakkınız yok' });
         }
-        player.remainingGames -= 1;
-        player.totalGames = (player.totalGames || 0) + 1;
-        await player.save();
-        return res.status(200).json(player);
+        
+        player = await Player.findOneAndUpdate(
+          { address },
+          {
+            $inc: {
+              remainingGames: -1,
+              totalGames: 1
+            }
+          },
+          { new: true }
+        );
+      } else if (action === 'add') {
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
+          return res.status(400).json({ error: 'Geçersiz miktar' });
+        }
+        
+        player = await Player.findOneAndUpdate(
+          { address },
+          {
+            $inc: {
+              remainingGames: amount,
+              purchasedGames: amount
+            }
+          },
+          { new: true }
+        );
+      } else {
+        return res.status(400).json({ error: 'Geçersiz eylem' });
       }
 
-      if (action === 'add') {
-        const player = await Player.findOne({ address });
-        if (!player) {
-          return res.status(404).json({ error: 'Player not found' });
-        }
-        const { amount } = req.body;
-        player.remainingGames += amount;
-        player.purchasedGames = (player.purchasedGames || 0) + amount;
-        await player.save();
-        return res.status(200).json(player);
-      }
-
-      return res.status(400).json({ error: 'Invalid action' });
+      return res.status(200).json(player);
     } catch (error) {
-      console.error('Error in PUT request:', error);
-      return res.status(500).json({ error: 'Server error' });
+      console.error('Oyuncu güncelleme hatası:', error);
+      return res.status(500).json({ error: 'Sunucu hatası' });
     }
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  return res.status(405).json({ error: 'Metod desteklenmiyor' });
 } 

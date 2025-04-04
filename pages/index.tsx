@@ -78,8 +78,18 @@ export default function Home() {
   }, [lastResetTime]);
 
   const fetchPlayerInfo = async () => {
+    if (!address) {
+      console.error('No address found');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/player/${address}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error fetching player info:', errorData);
+        return;
+      }
       const data = await response.json();
       setRemainingGames(data.remainingGames);
       setLastResetTime(new Date(data.lastResetTime));
