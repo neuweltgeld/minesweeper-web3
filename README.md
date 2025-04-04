@@ -1,18 +1,18 @@
 # Minesweeper Web3
 
-Web3 entegrasyonlu klasik Mayın Tarlası oyunu. Ethereum blockchain üzerinde çalışan, oyun hakları satın alınabilen ve liderlik tablosu olan bir oyun.
+A classic Minesweeper game with Web3 integration. Built on Ethereum blockchain, featuring purchasable game rights and a leaderboard system.
 
-## 🎮 Özellikler
+## 🎮 Features
 
-- Klasik Mayın Tarlası oyunu deneyimi
-- Web3 entegrasyonu (Ethereum)
-- Oyun hakları satın alma sistemi
-- Liderlik tablosu
-- Gerçek zamanlı skor takibi
-- Responsive tasarım
-- Pixel art tarzı arayüz
+- Classic Minesweeper gameplay experience
+- Web3 integration (Ethereum)
+- Purchasable game rights system
+- Leaderboard
+- Real-time score tracking
+- Responsive design
+- Pixel art style interface
 
-## 🛠️ Teknolojiler
+## 🛠️ Technologies
 
 - Next.js
 - TypeScript
@@ -23,72 +23,72 @@ Web3 entegrasyonlu klasik Mayın Tarlası oyunu. Ethereum blockchain üzerinde �
 - MongoDB
 - Solidity
 
-## 🚀 Kurulum
+## 🚀 Installation
 
-1. Repository'yi klonlayın:
+1. Clone the repository:
 ```bash
 git clone https://github.com/neuweltgeld/minesweeper-web3.git
 cd minesweeper-web3
 ```
 
-2. Bağımlılıkları yükleyin:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. `.env` dosyası oluşturun:
+3. Create `.env` file:
 ```env
 NEXT_PUBLIC_CONTRACT_ADDRESS=your_contract_address
 MONGODB_URI=your_mongodb_uri
 ```
 
-4. Geliştirme sunucusunu başlatın:
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-## 📝 Oyun Kuralları
+## 📝 Game Rules
 
-- Her oyuncu günde 10 ücretsiz oyun hakkına sahiptir
-- Ek oyun hakları 0.001 ETH karşılığında satın alınabilir
-- Oyun 10x10'luk bir tahta üzerinde oynanır
-- 20 mayın vardır
-- Oyun süresi 120 saniyedir
-- Sol tık ile kare açılır
-- Sağ tık ile mayın işaretlenir
-- Tüm mayınları işaretleyip diğer kareleri açarsanız kazanırsınız
-- Mayına tıklarsanız kaybedersiniz
+- Each player has 10 free games per day
+- Additional game rights can be purchased for 0.001 ETH
+- Game is played on a 10x10 board
+- There are 20 mines
+- Game duration is 120 seconds
+- Left click to reveal cells
+- Right click to flag mines
+- Win by flagging all mines and revealing other cells
+- Clicking a mine ends the game
 
-## 🏆 Skor Sistemi
+## 🏆 Scoring System
 
-- Skor, açılan kare sayısı ve kalan süreye göre hesaplanır
-- Daha hızlı bitirmek daha yüksek skor getirir
-- En yüksek skorlar liderlik tablosunda görüntülenir
+- Score is calculated based on revealed cells and remaining time
+- Faster completion yields higher scores
+- Highest scores are displayed on the leaderboard
 
-## 🔒 Güvenlik
+## 🔒 Security
 
-- Tüm işlemler blockchain üzerinde güvenli bir şekilde gerçekleşir
-- Oyun hakları ve skorlar merkezi olmayan bir şekilde saklanır
-- Kullanıcı cüzdanları güvenli bir şekilde bağlanır
+- All transactions are securely executed on the blockchain
+- Game rights and scores are stored in a decentralized manner
+- User wallets are securely connected
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing
 
-1. Bu repository'yi fork edin
-2. Yeni bir branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add some amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request oluşturun
+1. Fork this repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👨‍💻 Geliştirici
+## 👨‍💻 Developer
 
 - [Neuweltgeld](https://github.com/neuweltgeld)
 
-## 🙏 Teşekkürler
+## 🙏 Acknowledgments
 
-- Oyunu oynayan ve geri bildirim veren tüm kullanıcılara
-- Web3 topluluğuna
-- Açık kaynak topluluğuna 
+- All users who play the game and provide feedback
+- The Web3 community
+- The open-source community 
