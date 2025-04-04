@@ -163,6 +163,11 @@ export default function Home() {
   };
 
   const startGameWithCheck = async () => {
+    if (!address) {
+      console.error('No address found');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/player/${address}`, {
         method: 'PUT',

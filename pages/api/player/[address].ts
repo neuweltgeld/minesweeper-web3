@@ -41,13 +41,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const { action } = req.body;
 
+      if (!address) {
+        return res.status(400).json({ error: 'Address is required' });
+      }
+
       if (action === 'use') {
         const player = await Player.findOne({ address });
         if (!player || player.remainingGames <= 0) {
           return res.status(400).json({ error: 'No games remaining' });
         }
         player.remainingGames -= 1;
-        player.totalGames += 1;
+        player.totalGames = (player.totalGames || 0) + 1;
         await player.save();
         return res.status(200).json(player);
       }
@@ -59,13 +63,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
         const { amount } = req.body;
         player.remainingGames += amount;
-        player.purchasedGames += amount;
+        player.purchasedGames = (player.purchasedGames || 0) + amount;
         await player.save();
         return res.status(200).json(player);
       }
 
       return res.status(400).json({ error: 'Invalid action' });
     } catch (error) {
+      console.error('Error in PUT request:', error);
       return res.status(500).json({ error: 'Server error' });
     }
   }
