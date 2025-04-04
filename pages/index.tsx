@@ -35,6 +35,8 @@ export default function Home() {
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [showHighScoreModal, setShowHighScoreModal] = useState(false);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
+  const [isShaking, setIsShaking] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -83,9 +85,14 @@ export default function Home() {
   };
 
   const purchaseGame = async () => {
-    if (!signer) return;
+    if (!signer) {
+      console.error('No signer found');
+      return;
+    }
     
     try {
+      console.log('Starting purchase with amount:', purchaseAmount);
+      
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       
@@ -95,11 +102,21 @@ export default function Home() {
         signer
       );
 
+      // Her oyun için 0.001 ETH
+      const amountPerGame = ethers.parseEther('0.001');
+      const totalAmount = amountPerGame * BigInt(purchaseAmount);
+
+      console.log('Contract initialized, sending transaction...');
+      console.log('Amount per game:', amountPerGame.toString());
+      console.log('Total amount:', totalAmount.toString());
+      
       const tx = await contract.purchaseGames(purchaseAmount, {
-        value: ethers.parseEther((0.001 * purchaseAmount).toString()),
+        value: totalAmount,
       });
 
+      console.log('Transaction sent, waiting for confirmation...');
       await tx.wait();
+      console.log('Transaction confirmed');
       
       await fetch(`/api/player/${address}`, {
         method: 'PUT',
@@ -109,10 +126,12 @@ export default function Home() {
         body: JSON.stringify({ action: 'add', amount: purchaseAmount }),
       });
 
+      console.log('Player info updated');
       fetchPlayerInfo();
       setShowPurchaseModal(false);
     } catch (error) {
       console.error('Error purchasing game:', error);
+      alert('Error purchasing game. Please check console for details.');
     }
   };
 
@@ -215,17 +234,34 @@ export default function Home() {
   const handleEndGame = () => {
     setGameState(prev => ({
       ...prev,
-      gameOver: true,
+      started: false,
+      gameOver: false,
       won: false
     }));
     setShowEndGameModal(false);
   };
 
   useEffect(() => {
-    if (gameState.gameOver) {
-      handleEndGame();
+    if (gameState.gameOver && !gameState.won) {
+      setIsShaking(true);
+      setTimeout(() => {
+        setIsShaking(false);
+        setShowGameOver(true);
+      }, 500);
+    } else if (gameState.gameOver && gameState.won) {
+      setShowGameOver(true);
+    } else {
+      setShowGameOver(false);
     }
-  }, [gameState.gameOver]);
+  }, [gameState.gameOver, gameState.won]);
+
+  const handlePlayAgain = () => {
+    if (remainingGames <= 0) {
+      setShowPurchaseModal(true);
+      return;
+    }
+    startGameWithCheck();
+  };
 
   if (!mounted) {
     return null;
@@ -300,7 +336,7 @@ export default function Home() {
                     onClick={() => setShowPurchaseModal(true)}
                     className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-purple-500/50 transition-all duration-300 font-pixel"
                   >
-                    Buy Game (0.001 STT)
+                    Add Energy
                   </button>
                 )}
                 <ConnectButton.Custom>
@@ -425,24 +461,26 @@ export default function Home() {
                     </div>
                   ) : (
                     <div className="relative">
-                      <div className={`space-y-4 ${gameState.gameOver ? 'opacity-50' : ''}`}>
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="text-pink-400 font-pixel">Time: {gameState.time}s</div>
-                          <button
-                            onClick={() => setShowEndGameModal(true)}
-                            className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-red-500/50 transition-all duration-300 font-pixel"
-                          >
-                            End Game
-                          </button>
-                        </div>
+                      <div className={`space-y-4 ${isShaking ? 'animate-shake' : ''}`}>
+                        {gameState.started && (
+                          <div className="flex justify-between items-center mb-4">
+                            <div className="text-pink-400 font-pixel">Time: {gameState.time}s</div>
+                            <button
+                              onClick={() => setShowEndGameModal(true)}
+                              className="bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg shadow-lg hover:shadow-red-500/50 transition-all duration-300 font-pixel"
+                            >
+                              End Game
+                            </button>
+                          </div>
+                        )}
                         <GameBoard
                           board={gameState.board}
                           onCellClick={handleCellClick}
                           onCellRightClick={handleCellRightClick}
                         />
                       </div>
-                      {gameState.gameOver && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      {showGameOver && (
+                        <div className="fixed inset-0 flex flex-col items-center justify-center z-50">
                           {gameState.won && (
                             <div className="fixed inset-0 pointer-events-none">
                               <ConfettiDynamic
@@ -454,7 +492,7 @@ export default function Home() {
                               />
                             </div>
                           )}
-                          <div className="bg-black bg-opacity-70 p-8 rounded-lg text-center space-y-4 backdrop-blur-sm">
+                          <div className="bg-gray-900 p-8 rounded-lg text-center space-y-4 border border-purple-500/30">
                             <div className={`text-2xl font-bold ${gameState.won ? 'text-green-400' : 'text-red-400'} font-pixel`}>
                               {gameState.won ? 'Congratulations! You Won!' : 'Game Over!'}
                             </div>
@@ -474,7 +512,7 @@ export default function Home() {
                                 </button>
                               )}
                               <button
-                                onClick={startGameWithCheck}
+                                onClick={handlePlayAgain}
                                 className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-purple-500/50 font-pixel"
                               >
                                 Play Again
@@ -533,6 +571,70 @@ export default function Home() {
         )}
       </div>
       <HowToPlay />
+      {showPurchaseModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-center font-pixel">Purchase Games</h2>
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <button
+                onClick={() => handlePurchaseAmountChange(-1)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-pixel disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={purchaseAmount <= 1}
+              >
+                -
+              </button>
+              <span className="text-xl font-pixel">{purchaseAmount}</span>
+              <button
+                onClick={() => handlePurchaseAmountChange(1)}
+                className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-pixel disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={purchaseAmount >= (10 - remainingGames)}
+              >
+                +
+              </button>
+            </div>
+            <div className="text-center mb-6 font-pixel">
+              Total Cost: {(0.001 * purchaseAmount).toFixed(3)} STT
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowPurchaseModal(false)}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-pixel"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={purchaseGame}
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded font-pixel disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!signer || remainingGames + purchaseAmount > 10}
+              >
+                Purchase
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showEndGameModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border border-purple-500/30">
+            <h2 className="text-2xl font-bold mb-4 text-center font-pixel">End Game</h2>
+            <p className="text-center mb-6 font-pixel text-gray-300">Are you sure you want to end the game? Your score will not be saved.</p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowEndGameModal(false)}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded font-pixel"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEndGame}
+                className="flex-1 bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-white px-4 py-2 rounded font-pixel"
+              >
+                End Game
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
