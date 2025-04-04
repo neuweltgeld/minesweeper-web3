@@ -212,14 +212,18 @@ export default function Home() {
     }
   };
 
-  const handleGameOver = async () => {
-    // Oyun bitişinde hak düşme işlemini kaldırıyoruz
-    // Çünkü başlangıçta zaten düşüyor
+  const handleEndGame = () => {
+    setGameState(prev => ({
+      ...prev,
+      gameOver: true,
+      won: false
+    }));
+    setShowEndGameModal(false);
   };
 
   useEffect(() => {
     if (gameState.gameOver) {
-      handleGameOver();
+      handleEndGame();
     }
   }, [gameState.gameOver]);
 

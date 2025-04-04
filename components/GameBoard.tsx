@@ -7,7 +7,7 @@ interface GameBoardProps {
 }
 
 export function GameBoard({ board, onCellClick, onCellRightClick }: GameBoardProps) {
-  const isDevelopment = true; // Her zaman bombaları göster
+  const isDevelopment = false; // Mayınları gösterme
 
   const getNumberColor = (number: number) => {
     switch (number) {
