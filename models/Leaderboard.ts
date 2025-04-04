@@ -4,19 +4,16 @@ const leaderboardSchema = new mongoose.Schema({
   address: {
     type: String,
     required: true,
+    unique: true
   },
   score: {
     type: Number,
-    required: true,
-  },
-  time: {
-    type: Number,
-    required: true,
+    required: true
   },
   date: {
     type: Date,
-    default: Date.now,
-  },
+    default: Date.now
+  }
 });
 
 export default mongoose.models.Leaderboard || mongoose.model('Leaderboard', leaderboardSchema); 

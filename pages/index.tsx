@@ -146,7 +146,20 @@ export default function Home() {
   };
 
   const saveScore = async () => {
-    if (!address) return;
+    if (!address) {
+      console.error('No address found');
+      return;
+    }
+
+    if (!gameState.won) {
+      console.error('Game not won, cannot save score');
+      return;
+    }
+
+    console.log('Saving score:', {
+      address,
+      score: gameState.score
+    });
 
     try {
       const response = await fetch('/api/leaderboard', {
@@ -160,7 +173,17 @@ export default function Home() {
         }),
       });
 
+      console.log('API Response:', response.status);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error:', errorData);
+        return;
+      }
+
       const data = await response.json();
+      console.log('API Data:', data);
+
       setIsNewHighScore(data.isNewHighScore);
       setShowHighScoreModal(true);
 
