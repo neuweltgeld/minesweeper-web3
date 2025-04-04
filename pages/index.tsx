@@ -229,6 +229,12 @@ export default function Home() {
       const data = await response.json();
       console.log('API Data:', data);
 
+      if (!data.isNewHighScore) {
+        setShowGameOver(false);
+        setShowHighScoreModal(true);
+        return;
+      }
+
       setIsNewHighScore(data.isNewHighScore);
       setShowHighScoreModal(true);
 
@@ -760,6 +766,35 @@ export default function Home() {
           </div>
         </a>
       </div>
+
+      {showHighScoreModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-8 rounded-lg text-center space-y-4 border border-purple-500/30">
+            <div className={`text-2xl font-bold ${isNewHighScore ? 'text-green-400' : 'text-yellow-400'} font-pixel`}>
+              {isNewHighScore ? 'New High Score!' : 'Score Not Saved'}
+            </div>
+            <div className="text-gray-300 text-lg font-pixel">
+              {isNewHighScore ? `Your Score: ${gameState.score}` : 'Your score is lower than your previous best.'}
+            </div>
+            <div className="flex flex-col gap-4">
+              <button
+                onClick={() => {
+                  setShowHighScoreModal(false);
+                  setGameState(prev => ({
+                    ...prev,
+                    started: false,
+                    gameOver: false,
+                    won: false
+                  }));
+                }}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 rounded-lg text-lg font-semibold transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-purple-500/50 font-pixel"
+              >
+                Back to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
