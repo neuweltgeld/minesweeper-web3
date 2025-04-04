@@ -37,6 +37,9 @@ export default function Home() {
   const [isNewHighScore, setIsNewHighScore] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -110,14 +113,22 @@ export default function Home() {
       console.log('Amount per game:', amountPerGame.toString());
       console.log('Total amount:', totalAmount.toString());
       
+      // İşlem başladığında loading durumunu göster
+      setShowPurchaseModal(false);
+      setShowLoadingModal(true);
+      
       const tx = await contract.purchaseGames(purchaseAmount, {
         value: totalAmount,
       });
 
       console.log('Transaction sent, waiting for confirmation...');
-      await tx.wait();
-      console.log('Transaction confirmed');
+      const receipt = await tx.wait();
+      console.log('Transaction confirmed:', receipt);
       
+      // İşlem başarılı olduğunda loading modalını kapat
+      setShowLoadingModal(false);
+      
+      // Başarılı ödeme ve hak ekleme
       await fetch(`/api/player/${address}`, {
         method: 'PUT',
         headers: {
@@ -128,10 +139,19 @@ export default function Home() {
 
       console.log('Player info updated');
       fetchPlayerInfo();
-      setShowPurchaseModal(false);
+      
+      // Başarılı işlem modalını göster
+      setShowSuccessModal(true);
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 3000);
     } catch (error) {
       console.error('Error purchasing game:', error);
-      alert('Error purchasing game. Please check console for details.');
+      setShowLoadingModal(false);
+      setShowErrorModal(true);
+      setTimeout(() => {
+        setShowErrorModal(false);
+      }, 3000);
     }
   };
 
@@ -632,6 +652,35 @@ export default function Home() {
                 End Game
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Loading Modal */}
+      {showLoadingModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border border-purple-500/30 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto mb-4"></div>
+            <p className="text-gray-300 font-pixel">Processing your payment...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border border-purple-500/30 text-center">
+            <div className="text-green-500 text-4xl mb-4">✓</div>
+            <p className="text-gray-300 font-pixel">Payment successful! Energy added.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error Modal */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg max-w-md w-full border border-purple-500/30 text-center">
+            <div className="text-red-500 text-4xl mb-4">✕</div>
+            <p className="text-gray-300 font-pixel">Payment failed. Please try again.</p>
           </div>
         </div>
       )}
