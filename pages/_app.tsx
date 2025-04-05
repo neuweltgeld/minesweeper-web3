@@ -10,7 +10,7 @@ import { publicProvider } from 'wagmi/providers/public';
 import { ChakraProvider } from '@chakra-ui/react';
 import '../styles/globals.css';
 
-export const CONTRACT_ADDRESS = '0x2b8B8EFd9a9Ec66EC6854145Fc026b336be894b7';
+export const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x2b8B8EFd9a9Ec66EC6854145Fc026b336be894b7';
 
 const somnia = {
   id: 50312,

@@ -7,10 +7,10 @@ declare global {
   };
 }
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://knncnl:Marcus6641..@cluster0.yegjumt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('MongoDB URI tanımlanmamış');
+  throw new Error('MongoDB URI is not defined in environment variables');
 }
 
 let cached = global.mongoose;
@@ -19,7 +19,11 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
-async function dbConnect() {
+interface ConnectionOptions {
+  bufferCommands?: boolean;
+}
+
+export async function dbConnect(opts: ConnectionOptions = {}) {
   if (cached.conn) {
     return cached.conn;
   }
@@ -27,17 +31,10 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('MongoDB bağlantısı başarılı');
+    cached.promise = mongoose.connect(MONGODB_URI as string, opts).then((mongoose) => {
       return mongoose.connection;
-    }).catch((error) => {
-      console.error('MongoDB bağlantı hatası:', error);
-      throw error;
     });
   }
 
@@ -49,6 +46,4 @@ async function dbConnect() {
   }
 
   return cached.conn;
-}
-
-export default dbConnect; 
+} 

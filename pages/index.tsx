@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import Confetti from 'react-confetti';
 import { ethers } from 'ethers';
 import contractABI from '../contracts/Minesweeper.json';
+import { CONTRACT_ADDRESS } from './_app';
 
 const ConfettiDynamic = dynamic(() => import('react-confetti'), {
   ssr: false
@@ -21,7 +22,6 @@ export default function Home() {
     address: address,
   });
   const { data: signer } = useWalletClient();
-  const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || '';
   const [mounted, setMounted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
@@ -44,10 +44,7 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    const savedLeaderboard = localStorage.getItem('minesweeper_leaderboard');
-    if (savedLeaderboard) {
-      setLeaderboard(JSON.parse(savedLeaderboard));
-    }
+    fetchLeaderboard();
   }, []);
 
   useEffect(() => {
@@ -61,15 +58,14 @@ export default function Home() {
       const timer = setInterval(() => {
         const now = new Date();
         const resetTime = new Date(lastResetTime);
-        resetTime.setHours(resetTime.getHours() + 24);
+        resetTime.setHours(resetTime.getHours() + 1);
         
         const diff = resetTime.getTime() - now.getTime();
         if (diff <= 0) {
           fetchPlayerInfo();
         } else {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
-          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-          setTimeUntilReset(`${hours}h ${minutes}m`);
+          const minutes = Math.floor(diff / (1000 * 60));
+          setTimeUntilReset(`${minutes}m`);
         }
       }, 1000);
 
@@ -95,6 +91,20 @@ export default function Home() {
       setLastResetTime(new Date(data.lastResetTime));
     } catch (error) {
       console.error('Error fetching player info:', error);
+    }
+  };
+
+  const fetchLeaderboard = async () => {
+    try {
+      const response = await fetch('/api/leaderboard');
+      if (!response.ok) {
+        console.error('Liderlik tablosu alma hatası');
+        return;
+      }
+      const data = await response.json();
+      setLeaderboard(data);
+    } catch (error) {
+      console.error('Liderlik tablosu alma hatası:', error);
     }
   };
 
@@ -239,35 +249,9 @@ export default function Home() {
       const data = await response.json();
       console.log('API Data:', data);
 
-      if (!data.isNewHighScore) {
-        setShowGameOver(false);
-        setShowHighScoreModal(true);
-        return;
-      }
-
       setIsNewHighScore(data.isNewHighScore);
       setShowHighScoreModal(true);
-
-      if (data.isNewHighScore) {
-        const newEntry: LeaderboardEntry = {
-          address,
-          score: gameState.score,
-          date: new Date().toISOString()
-        };
-
-        const savedLeaderboard = localStorage.getItem('minesweeper_leaderboard');
-        let leaderboard: LeaderboardEntry[] = savedLeaderboard ? JSON.parse(savedLeaderboard) : [];
-
-        leaderboard = leaderboard.filter(entry => entry.address !== address);
-        leaderboard.push(newEntry);
-
-        const updatedLeaderboard = leaderboard
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 20);
-
-        setLeaderboard(updatedLeaderboard);
-        localStorage.setItem('minesweeper_leaderboard', JSON.stringify(updatedLeaderboard));
-      }
+      setLeaderboard(data.leaderboard);
     } catch (error) {
       console.error('Error saving score:', error);
     }
@@ -459,7 +443,7 @@ export default function Home() {
                     <div className="space-y-8">
                       <div className="text-center space-y-4">
                         <div className="flex justify-center">
-                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-pixel overflow-hidden whitespace-nowrap border-r-2 border-purple-500 animate-typing w-0">
+                          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 font-pixel overflow-hidden whitespace-nowrap border-r-2 border-purple-500 animate-typing w-0 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">
                             Welcome to Minesweeper!
                           </h2>
                         </div>
