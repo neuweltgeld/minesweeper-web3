@@ -1,6 +1,62 @@
 # Minesweeper Web3
 
-A classic Minesweeper game with Web3 integration. Built on Ethereum blockchain, featuring purchasable game rights and a leaderboard system.
+A Web3-based Minesweeper game. Built on the Somnia, where players earn daily game rights and save their high scores.
+
+## Features
+
+- 🎮 Classic Minesweeper gameplay experience
+- 💰 Hourly free game
+- 🏆 Leaderboard
+- 🌙 Dark theme
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/neuweltgeld/minesweeper-web3.git
+cd minesweeper-web3
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create `.env` file:
+```bash
+cp .env.example .env
+```
+
+4. Edit `.env` file:
+```
+NEXT_PUBLIC_CONTRACT_ADDRESS=your_contract_address
+MONGODB_URI=your_mongodb_uri
+```
+
+5. Start the development server:
+```bash
+npm run dev
+```
+
+## Environment Variables
+
+- `NEXT_PUBLIC_CONTRACT_ADDRESS`: Smart contract address
+- `MONGODB_URI`: MongoDB connection URI
+
+## Technologies
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- MongoDB
+- Web3.js
+- Ethers.js
+- RainbowKit
+- Wagmi
+
+## License
+
+MIT
 
 ## 🎮 Features
 
