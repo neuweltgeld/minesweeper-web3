@@ -7,7 +7,7 @@ interface GameBoardProps {
 }
 
 export function GameBoard({ board, onCellClick, onCellRightClick }: GameBoardProps) {
-  const isDevelopment = true; // Mayınları gösterme
+  const isDevelopment = false; // Mayınları gösterme
 
   const getNumberColor = (number: number) => {
     switch (number) {
@@ -64,9 +64,7 @@ export function GameBoard({ board, onCellClick, onCellRightClick }: GameBoardPro
                     : ''
                 : cell.isFlagged
                   ? '🚩'
-                  : isDevelopment && cell.hasMine
-                    ? '💣'
-                    : ''
+                  : ''
               }
             </button>
           ))
