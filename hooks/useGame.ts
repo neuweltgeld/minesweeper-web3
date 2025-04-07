@@ -3,7 +3,7 @@ import { CellState, GameState, UserStats } from '../types/game';
 
 const BOARD_SIZE = 10;
 const MINE_COUNT = 20;
-const GAME_DURATION = 120;
+const GAME_DURATION = 180;
 
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>({
